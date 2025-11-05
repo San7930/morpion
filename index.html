@@ -3,609 +3,330 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Blokus</title>
+    <title>Morpion Rétro - Mode Effacement</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
+
         body {
-            font-family: Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Courier New', monospace;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #7c2d12 0%, #a16207 50%, #7c2d12 100%);
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: 100vh;
             padding: 20px;
         }
+
         .container {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
-            max-width: 1400px;
-            width: 100%;
+            background: #fcd34d;
+            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            border: 8px solid #78350f;
         }
-        .header {
+
+        h1 {
+            text-align: center;
+            font-size: 3em;
+            color: #78350f;
+            margin-bottom: 10px;
+            text-shadow: 3px 3px 0px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            text-align: center;
+            font-size: 1.2em;
+            color: #92400e;
+            background: #fef3c7;
+            border: 4px solid #a16207;
+            padding: 10px 20px;
+            display: inline-block;
+            margin-bottom: 30px;
+        }
+
+        .subtitle-container {
             text-align: center;
             margin-bottom: 20px;
         }
-        h1 {
-            color: #333;
-            margin-bottom: 10px;
-        }
-        .game-info {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+
+        .status {
+            text-align: center;
             margin-bottom: 20px;
-            padding: 15px;
-            background: #f5f5f5;
-            border-radius: 10px;
         }
-        .player-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .player-indicator {
-            width: 30px;
-            height: 30px;
-            border-radius: 5px;
-            border: 3px solid #333;
-        }
-        .controls {
-            display: flex;
-            gap: 10px;
-        }
-        button {
-            padding: 10px 20px;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
+
+        .status-box {
+            font-size: 1.5em;
             font-weight: bold;
-            transition: all 0.3s;
-        }
-        button:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-        .btn-rotate {
-            background: #3498db;
-            color: white;
-        }
-        .btn-flip {
-            background: #9b59b6;
-            color: white;
-        }
-        .btn-pass {
-            background: #e74c3c;
-            color: white;
-        }
-        .btn-mode {
-            background: #2ecc71;
-            color: white;
-        }
-        .game-area {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-        }
-        .board {
-            display: grid;
-            grid-template-columns: repeat(20, 20px);
-            gap: 1px;
-            background: #333;
-            padding: 1px;
-            border: 3px solid #333;
-        }
-        .cell {
-            width: 20px;
-            height: 20px;
-            background: white;
-            cursor: pointer;
-        }
-        .cell:hover {
-            background: #f0f0f0;
-        }
-        .cell.blue { background: #3498db; }
-        .cell.red { background: #e74c3c; }
-        .cell.yellow { background: #f1c40f; }
-        .cell.green { background: #2ecc71; }
-        .cell.preview { opacity: 0.5; }
-        .pieces-panel {
-            max-width: 400px;
-        }
-        .pieces-title {
-            font-size: 18px;
-            font-weight: bold;
-            margin-bottom: 10px;
-            color: #333;
-        }
-        .pieces-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(80px, 1fr));
-            gap: 10px;
-            max-height: 500px;
-            overflow-y: auto;
-            padding: 10px;
-            background: #f9f9f9;
-            border-radius: 10px;
-        }
-        .piece {
-            cursor: pointer;
-            padding: 5px;
-            border: 2px solid transparent;
-            border-radius: 5px;
-            transition: all 0.3s;
+            color: #78350f;
+            background: #fef3c7;
+            border: 4px solid #a16207;
+            padding: 15px 30px;
             display: inline-block;
         }
-        .piece:hover {
-            background: #e8e8e8;
-            transform: scale(1.05);
+
+        .status-box.winner {
+            background: #fde047;
+            animation: pulse 1s infinite;
         }
-        .piece.selected {
-            border-color: #333;
-            background: #e0e0e0;
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
         }
-        .piece.used {
-            opacity: 0.3;
-            cursor: not-allowed;
+
+        .board-container {
+            background: #78350f;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+            display: inline-block;
         }
-        .piece-grid {
-            display: grid;
-            gap: 1px;
-        }
-        .piece-cell {
-            width: 12px;
-            height: 12px;
-            border-radius: 2px;
-        }
-        .game-over {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0,0,0,0.8);
-            display: none;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .game-over.show {
-            display: flex;
-        }
-        .game-over-content {
-            background: white;
-            padding: 40px;
-            border-radius: 15px;
+
+        .game-center {
             text-align: center;
-            max-width: 500px;
         }
-        .game-over h2 {
-            font-size: 32px;
-            margin-bottom: 20px;
-            color: #333;
+
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 96px);
+            grid-gap: 8px;
         }
-        .scores {
-            margin: 20px 0;
-            font-size: 18px;
-        }
-        .score-item {
-            margin: 10px 0;
-            padding: 10px;
-            border-radius: 5px;
-        }
-        .winner {
-            font-size: 24px;
+
+        .cell {
+            width: 96px;
+            height: 96px;
+            background: #fffbeb;
+            border: 4px solid #b45309;
+            font-size: 3em;
             font-weight: bold;
-            margin: 20px 0;
-            color: #2ecc71;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+            text-shadow: 2px 2px 0px rgba(0,0,0,0.2);
+        }
+
+        .cell:hover {
+            background: #fef3c7;
+            transform: scale(0.95);
+        }
+
+        .cell:active {
+            transform: scale(0.9);
+        }
+
+        .cell.x {
+            color: #b91c1c;
+        }
+
+        .cell.o {
+            color: #1e40af;
+        }
+
+        .cell.winning {
+            background: #fde047 !important;
+            animation: pulse 1s infinite;
+        }
+
+        .controls {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .reset-btn {
+            background: #dc2626;
+            color: white;
+            font-family: 'Courier New', monospace;
+            font-weight: bold;
+            font-size: 1.2em;
+            padding: 15px 30px;
+            border: 4px solid #991b1b;
+            border-radius: 8px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            transition: all 0.2s;
+        }
+
+        .reset-btn:hover {
+            background: #b91c1c;
+        }
+
+        .reset-btn:active {
+            transform: scale(0.95);
+        }
+
+        .rules {
+            background: #fef3c7;
+            border: 4px solid #a16207;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .rules-title {
+            font-size: 1em;
+            font-weight: bold;
+            color: #78350f;
+            margin-bottom: 5px;
+        }
+
+        .rules-text {
+            font-size: 0.85em;
+            color: #92400e;
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <div class="header">
-            <h1>🎮 BLOKUS</h1>
-        </div>
+        <h1>MORPION RÉTRO</h1>
         
-        <div class="game-info">
-            <div class="player-info">
-                <span style="font-weight: bold;">Tour:</span>
-                <div class="player-indicator" id="currentPlayerColor"></div>
-                <span id="currentPlayerName"></span>
-            </div>
-            <div id="scoreDisplay"></div>
-            <div class="controls">
-                <button class="btn-mode" onclick="toggleMode()">Mode: <span id="modeText">2 Joueurs</span></button>
-                <button class="btn-rotate" onclick="rotatePiece()">↻ Rotation</button>
-                <button class="btn-flip" onclick="flipPiece()">⇄ Miroir</button>
-                <button class="btn-pass" onclick="passTurn()">⏭ Passer</button>
+        <div class="subtitle-container">
+            <div class="subtitle">★ Mode Effacement: 3 pièces max ★</div>
+        </div>
+
+        <div class="status">
+            <div class="status-box" id="status">Joueur: X</div>
+        </div>
+
+        <div class="game-center">
+            <div class="board-container">
+                <div class="board" id="board">
+                    <button class="cell" data-index="0"></button>
+                    <button class="cell" data-index="1"></button>
+                    <button class="cell" data-index="2"></button>
+                    <button class="cell" data-index="3"></button>
+                    <button class="cell" data-index="4"></button>
+                    <button class="cell" data-index="5"></button>
+                    <button class="cell" data-index="6"></button>
+                    <button class="cell" data-index="7"></button>
+                    <button class="cell" data-index="8"></button>
+                </div>
             </div>
         </div>
-        
-        <div class="game-area">
-            <div id="board" class="board"></div>
-            <div class="pieces-panel">
-                <div class="pieces-title">Pièces disponibles</div>
-                <div id="piecesGrid" class="pieces-grid"></div>
-            </div>
+
+        <div class="controls">
+            <button class="reset-btn" onclick="resetGame()">🔄 NOUVELLE PARTIE</button>
         </div>
-    </div>
-    
-    <div id="gameOver" class="game-over">
-        <div class="game-over-content">
-            <h2>🏆 Partie terminée !</h2>
-            <div id="finalScores" class="scores"></div>
-            <div id="winnerAnnouncement" class="winner"></div>
-            <button class="btn-mode" onclick="location.reload()" style="margin-top: 20px; padding: 15px 30px; font-size: 16px;">Nouvelle partie</button>
+
+        <div class="rules">
+            <div class="rules-title">📜 RÈGLE SPÉCIALE 📜</div>
+            <div class="rules-text">
+                Quand tu poses ta 4ème pièce,<br>
+                ta première pièce disparaît!
+            </div>
         </div>
     </div>
 
     <script>
-        const BOARD_SIZE = 20;
-        const COLORS = {
-            2: ['blue', 'red'],
-            4: ['blue', 'red', 'yellow', 'green']
-        };
-        const PLAYER_NAMES = {
-            2: ['Joueur Bleu', 'Joueur Rouge'],
-            4: ['Joueur Bleu', 'Joueur Rouge', 'Joueur Jaune', 'Joueur Vert']
-        };
-        const START_CORNERS = {
-            2: [[0, 0], [19, 19]],
-            4: [[0, 0], [19, 0], [0, 19], [19, 19]]
-        };
-        
-        let gameMode = 2;
-        let board = [];
-        let currentPlayer = 0;
-        let selectedPiece = null;
-        let pieceRotation = 0;
-        let pieceFlipped = false;
-        let playerPieces = {};
-        let usedPieces = {};
-        let scores = {};
-        let firstMove = {};
-        let passedPlayers = {};
-        
-        const PIECES = [
-            [[1]], // Monomino
-            [[1,1]], // Domino
-            [[1,1,1]], // Triomino I
-            [[1,1],[1,0]], // Triomino L
-            [[1,1,1,1]], // Tetromino I
-            [[1,1,1],[1,0,0]], // Tetromino L
-            [[1,1,1],[0,1,0]], // Tetromino T
-            [[1,1],[1,1]], // Tetromino O
-            [[1,1,0],[0,1,1]], // Tetromino Z
-            [[1,1,1,1,1]], // Pentomino I
-            [[1,1,1,1],[1,0,0,0]], // Pentomino L
-            [[1,1,1,1],[0,1,0,0]], // Pentomino Y
-            [[1,1,1],[1,0,1]], // Pentomino U
-            [[1,1,1],[0,1,1]], // Pentomino P
-            [[1,1,1,1],[0,0,1,0]], // Pentomino N
-            [[0,1,1],[1,1,0],[1,0,0]], // Pentomino Z
-            [[1,1,1],[0,1,0],[0,1,0]], // Pentomino T
-            [[1,1,0],[0,1,1],[0,1,0]], // Pentomino W
-            [[0,1,0],[1,1,1],[0,1,0]], // Pentomino X
-            [[1,1,1],[1,0,0],[1,0,0]], // Pentomino V
-            [[1,1,1,1],[0,0,0,1]] // Pentomino F
+        let board = Array(9).fill(null);
+        let isXNext = true;
+        let moveHistory = [];
+        let winner = null;
+        let winningLine = [];
+
+        const cells = document.querySelectorAll('.cell');
+        const statusBox = document.getElementById('status');
+
+        const winningCombos = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
         ];
 
-        function initGame() {
-            board = Array(BOARD_SIZE).fill().map(() => Array(BOARD_SIZE).fill(null));
-            currentPlayer = 0;
-            selectedPiece = null;
-            pieceRotation = 0;
-            pieceFlipped = false;
-            
-            playerPieces = {};
-            usedPieces = {};
-            scores = {};
-            firstMove = {};
-            passedPlayers = {};
-            
-            COLORS[gameMode].forEach((color, idx) => {
-                playerPieces[idx] = PIECES.map((p, i) => ({id: i, shape: p}));
-                usedPieces[idx] = [];
-                scores[idx] = 0;
-                firstMove[idx] = true;
-                passedPlayers[idx] = false;
-            });
-            
-            createBoard();
-            updatePiecesDisplay();
-            updateGameInfo();
-        }
-
-        function toggleMode() {
-            gameMode = gameMode === 2 ? 4 : 2;
-            document.getElementById('modeText').textContent = gameMode + ' Joueurs';
-            initGame();
-        }
-
-        function createBoard() {
-            const boardEl = document.getElementById('board');
-            boardEl.innerHTML = '';
-            boardEl.style.gridTemplateColumns = `repeat(${BOARD_SIZE}, 20px)`;
-            
-            for (let i = 0; i < BOARD_SIZE; i++) {
-                for (let j = 0; j < BOARD_SIZE; j++) {
-                    const cell = document.createElement('div');
-                    cell.className = 'cell';
-                    cell.dataset.row = i;
-                    cell.dataset.col = j;
-                    cell.onmouseenter = () => showPreview(i, j);
-                    cell.onmouseleave = clearPreview;
-                    cell.onclick = () => placePiece(i, j);
-                    boardEl.appendChild(cell);
+        function checkWinner() {
+            for (let combo of winningCombos) {
+                const [a, b, c] = combo;
+                if (board[a] && board[a] === board[b] && board[a] === board[c]) {
+                    return { winner: board[a], line: combo };
                 }
             }
+            return null;
         }
 
-        function updatePiecesDisplay() {
-            const grid = document.getElementById('piecesGrid');
-            grid.innerHTML = '';
-            
-            playerPieces[currentPlayer].forEach((piece, idx) => {
-                const pieceEl = document.createElement('div');
-                pieceEl.className = 'piece';
-                if (usedPieces[currentPlayer].includes(piece.id)) {
-                    pieceEl.classList.add('used');
-                }
-                if (selectedPiece && selectedPiece.id === piece.id) {
-                    pieceEl.classList.add('selected');
-                }
+        function handleClick(index) {
+            if (board[index] || winner) return;
+
+            const currentPlayer = isXNext ? 'X' : 'O';
+            board[index] = currentPlayer;
+
+            moveHistory.push({ player: currentPlayer, position: index });
+
+            // Si le joueur a déjà 3 pièces, on efface la plus ancienne
+            const playerMoves = moveHistory.filter(move => move.player === currentPlayer);
+            if (playerMoves.length > 3) {
+                const oldestMove = playerMoves[0];
+                board[oldestMove.position] = null;
                 
-                pieceEl.onclick = () => {
-                    if (!usedPieces[currentPlayer].includes(piece.id)) {
-                        selectPiece(piece);
-                    }
-                };
-                
-                const shape = piece.shape;
-                const gridEl = document.createElement('div');
-                gridEl.className = 'piece-grid';
-                gridEl.style.gridTemplateColumns = `repeat(${shape[0].length}, 12px)`;
-                
-                shape.forEach(row => {
-                    row.forEach(cell => {
-                        const cellEl = document.createElement('div');
-                        cellEl.className = 'piece-cell';
-                        if (cell === 1) {
-                            cellEl.style.background = COLORS[gameMode][currentPlayer];
-                        } else {
-                            cellEl.style.background = 'transparent';
-                        }
-                        gridEl.appendChild(cellEl);
-                    });
-                });
-                
-                pieceEl.appendChild(gridEl);
-                grid.appendChild(pieceEl);
-            });
-        }
-
-        function selectPiece(piece) {
-            selectedPiece = piece;
-            pieceRotation = 0;
-            pieceFlipped = false;
-            updatePiecesDisplay();
-        }
-
-        function rotatePiece() {
-            if (!selectedPiece) return;
-            pieceRotation = (pieceRotation + 1) % 4;
-        }
-
-        function flipPiece() {
-            if (!selectedPiece) return;
-            pieceFlipped = !pieceFlipped;
-        }
-
-        function getTransformedPiece() {
-            if (!selectedPiece) return null;
-            
-            let shape = selectedPiece.shape.map(row => [...row]);
-            
-            if (pieceFlipped) {
-                shape = shape.map(row => row.reverse());
+                // Retirer le coup le plus ancien de l'historique
+                const indexToRemove = moveHistory.findIndex(
+                    move => move.player === currentPlayer && move.position === oldestMove.position
+                );
+                moveHistory.splice(indexToRemove, 1);
             }
-            
-            for (let i = 0; i < pieceRotation; i++) {
-                const rows = shape.length;
-                const cols = shape[0].length;
-                const newShape = Array(cols).fill().map(() => Array(rows).fill(0));
-                
-                for (let r = 0; r < rows; r++) {
-                    for (let c = 0; c < cols; c++) {
-                        newShape[c][rows - 1 - r] = shape[r][c];
-                    }
-                }
-                shape = newShape;
-            }
-            
-            return shape;
-        }
 
-        function showPreview(row, col) {
-            clearPreview();
-            if (!selectedPiece) return;
+            updateDisplay();
             
-            const shape = getTransformedPiece();
-            if (!shape) return;
-            
-            for (let i = 0; i < shape.length; i++) {
-                for (let j = 0; j < shape[i].length; j++) {
-                    if (shape[i][j] === 1) {
-                        const r = row + i;
-                        const c = col + j;
-                        if (r >= 0 && r < BOARD_SIZE && c >= 0 && c < BOARD_SIZE) {
-                            const cell = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                            if (cell && !board[r][c]) {
-                                cell.classList.add(COLORS[gameMode][currentPlayer], 'preview');
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        function clearPreview() {
-            document.querySelectorAll('.preview').forEach(cell => {
-                cell.classList.remove('preview', ...COLORS[gameMode]);
-            });
-        }
-
-        function canPlacePiece(row, col) {
-            if (!selectedPiece) return false;
-            
-            const shape = getTransformedPiece();
-            const color = COLORS[gameMode][currentPlayer];
-            let touchesCorner = false;
-            let touchesSide = false;
-            let onStartCorner = false;
-            
-            for (let i = 0; i < shape.length; i++) {
-                for (let j = 0; j < shape[i].length; j++) {
-                    if (shape[i][j] === 1) {
-                        const r = row + i;
-                        const c = col + j;
-                        
-                        if (r < 0 || r >= BOARD_SIZE || c < 0 || c >= BOARD_SIZE) return false;
-                        if (board[r][c]) return false;
-                        
-                        if (firstMove[currentPlayer]) {
-                            const [startRow, startCol] = START_CORNERS[gameMode][currentPlayer];
-                            if (r === startRow && c === startCol) {
-                                onStartCorner = true;
-                            }
-                        }
-                        
-                        [[r-1,c], [r+1,c], [r,c-1], [r,c+1]].forEach(([nr, nc]) => {
-                            if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
-                                if (board[nr][nc] === color) touchesSide = true;
-                            }
-                        });
-                        
-                        [[r-1,c-1], [r-1,c+1], [r+1,c-1], [r+1,c+1]].forEach(([nr, nc]) => {
-                            if (nr >= 0 && nr < BOARD_SIZE && nc >= 0 && nc < BOARD_SIZE) {
-                                if (board[nr][nc] === color) touchesCorner = true;
-                            }
-                        });
-                    }
-                }
-            }
-            
-            if (firstMove[currentPlayer]) {
-                return onStartCorner;
-            }
-            
-            return touchesCorner && !touchesSide;
-        }
-
-        function placePiece(row, col) {
-            if (!canPlacePiece(row, col)) return;
-            
-            const shape = getTransformedPiece();
-            const color = COLORS[gameMode][currentPlayer];
-            let squaresPlaced = 0;
-            
-            for (let i = 0; i < shape.length; i++) {
-                for (let j = 0; j < shape[i].length; j++) {
-                    if (shape[i][j] === 1) {
-                        const r = row + i;
-                        const c = col + j;
-                        board[r][c] = color;
-                        const cell = document.querySelector(`[data-row="${r}"][data-col="${c}"]`);
-                        cell.classList.add(color);
-                        squaresPlaced++;
-                    }
-                }
-            }
-            
-            scores[currentPlayer] += squaresPlaced;
-            usedPieces[currentPlayer].push(selectedPiece.id);
-            firstMove[currentPlayer] = false;
-            passedPlayers[currentPlayer] = false;
-            
-            selectedPiece = null;
-            clearPreview();
-            nextPlayer();
-        }
-
-        function passTurn() {
-            passedPlayers[currentPlayer] = true;
-            
-            let allPassed = true;
-            for (let i = 0; i < gameMode; i++) {
-                if (!passedPlayers[i]) {
-                    allPassed = false;
-                    break;
-                }
-            }
-            
-            if (allPassed) {
-                endGame();
+            const result = checkWinner();
+            if (result) {
+                winner = result.winner;
+                winningLine = result.line;
+                statusBox.textContent = `🏆 ${winner} GAGNE!`;
+                statusBox.classList.add('winner');
+                highlightWinningCells();
+            } else if (board.every(cell => cell !== null)) {
+                winner = 'draw';
+                statusBox.textContent = '🤝 ÉGALITÉ!';
+                statusBox.classList.add('winner');
             } else {
-                nextPlayer();
+                isXNext = !isXNext;
+                updateStatus();
             }
         }
 
-        function nextPlayer() {
-            currentPlayer = (currentPlayer + 1) % gameMode;
-            updatePiecesDisplay();
-            updateGameInfo();
-        }
-
-        function updateGameInfo() {
-            document.getElementById('currentPlayerColor').style.background = COLORS[gameMode][currentPlayer];
-            document.getElementById('currentPlayerName').textContent = PLAYER_NAMES[gameMode][currentPlayer];
-            
-            let scoreHTML = '';
-            for (let i = 0; i < gameMode; i++) {
-                scoreHTML += `<span style="color: ${COLORS[gameMode][i]}; font-weight: bold; margin: 0 10px;">${PLAYER_NAMES[gameMode][i]}: ${scores[i]} pts</span>`;
-            }
-            document.getElementById('scoreDisplay').innerHTML = scoreHTML;
-        }
-
-        function endGame() {
-            const gameOverEl = document.getElementById('gameOver');
-            const scoresEl = document.getElementById('finalScores');
-            const winnerEl = document.getElementById('winnerAnnouncement');
-            
-            let scoresHTML = '<h3>Scores finaux:</h3>';
-            let maxScore = -1;
-            let winners = [];
-            
-            for (let i = 0; i < gameMode; i++) {
-                scoresHTML += `<div class="score-item" style="background: ${COLORS[gameMode][i]}; color: white;">${PLAYER_NAMES[gameMode][i]}: ${scores[i]} points</div>`;
-                if (scores[i] > maxScore) {
-                    maxScore = scores[i];
-                    winners = [i];
-                } else if (scores[i] === maxScore) {
-                    winners.push(i);
+        function updateDisplay() {
+            cells.forEach((cell, index) => {
+                cell.textContent = board[index] || '';
+                cell.className = 'cell';
+                if (board[index] === 'X') {
+                    cell.classList.add('x');
+                } else if (board[index] === 'O') {
+                    cell.classList.add('o');
                 }
-            }
-            
-            scoresEl.innerHTML = scoresHTML;
-            
-            if (winners.length === 1) {
-                winnerEl.innerHTML = `🏆 ${PLAYER_NAMES[gameMode][winners[0]]} gagne avec ${maxScore} points ! 🏆`;
-            } else {
-                const winnerNames = winners.map(i => PLAYER_NAMES[gameMode][i]).join(' et ');
-                winnerEl.innerHTML = `🏆 Égalité entre ${winnerNames} avec ${maxScore} points ! 🏆`;
-            }
-            
-            gameOverEl.classList.add('show');
+            });
         }
 
-        initGame();
+        function updateStatus() {
+            const currentPlayer = isXNext ? 'X' : 'O';
+            statusBox.textContent = `Joueur: ${currentPlayer}`;
+        }
+
+        function highlightWinningCells() {
+            winningLine.forEach(index => {
+                cells[index].classList.add('winning');
+            });
+        }
+
+        function resetGame() {
+            board = Array(9).fill(null);
+            isXNext = true;
+            moveHistory = [];
+            winner = null;
+            winningLine = [];
+            statusBox.classList.remove('winner');
+            updateDisplay();
+            updateStatus();
+        }
+
+        // Initialisation
+        cells.forEach((cell, index) => {
+            cell.addEventListener('click', () => handleClick(index));
+        });
+
+        updateStatus();
     </script>
 </body>
 </html>
